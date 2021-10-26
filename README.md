@@ -2,6 +2,54 @@
 
 ## Logs
 
+### 2021.10.25
+
+- 어제에 이어서 컴포넌트 함수의 로직의 디자인을 어떻게 해야할지 고민된다.
+
+1. 기존 내가 알고 있던 방식대로
+
+```js
+////1
+function Sample() {
+  this.state = {
+    //state
+  };
+  this.setState = () => {};
+  this.render = () => {
+    //...rendering
+  };
+}
+```
+
+2. this를 제거하고, state를 숨겨서 클로저 함수로 변환.
+
+```js
+////2
+function Sample() {
+  let state = {
+    firstName: "ungseon",
+    lastName: "ryu",
+    gender: "male",
+  };
+  const setState = (nextState) => {
+    state = nextState;
+    render();
+  };
+  const render = () => {
+    //...rendering
+  };
+
+  /* 제대로 작동하는 지 확인하고자 만든 함수
+  const printState = () => {
+    console.log(state);
+  };
+  */
+  return { setState, render };
+}
+```
+
+2의 경우처럼 작성하면 재사용에 어려움이 있는 걸까?
+
 ### 2021.10.24
 
 - 왜 생성자 함수로 작성을 해야할까?
