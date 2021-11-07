@@ -23,7 +23,9 @@ const Todos = (function () {
     this.$target.appendChild($title);
     this.$target.appendChild($prevBtn);
 
-    // TodoList
+    // TodoList : render에서 this로 참조하므로 this로 선언함
+    // 이후 #render에서 $todolist를 참조하지 않고,
+    // 여기 생성자 함수에서 아예 처리하면 cosnt로 선언할 수 있지 않을까?
     this.$todolist = document.createElement("ul");
     this.$target.appendChild(this.$todolist);
 
