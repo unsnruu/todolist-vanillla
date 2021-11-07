@@ -1,14 +1,15 @@
 //Server의 역할을 대신하는 로직을 구현합니다.
 
-const categoriesData = ["Immediately", "Tasks", "Shopping"];
-const todosData = [
-  {
-    id: "abc",
-    category: "Immediately",
-    text: "빨래 하기",
-    created: new Date().getTime(),
+const db = {
+  categories: ["Today", "Next Week", "To-Buy", "Shopping", "Chores"],
+  todos: {
+    Today: [],
+    "Next Week": [],
+    "To-Buy": [],
+    Shopping: [],
+    Chores: [],
   },
-];
+};
 
 async function getCatData() {
   return new Promise((res, rej) => {
