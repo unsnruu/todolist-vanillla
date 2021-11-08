@@ -1,30 +1,37 @@
 //Server의 역할을 대신하는 로직을 구현합니다.
 
 const db = {
-  categories: ["Today", "Next Week", "To-Buy", "Shopping", "Chores"],
+  categories: ["Today", "Next Week", "Shopping", "Chores", "(Error)"],
   todos: {
-    Today: [],
+    Today: [
+      { text: "서류 보내기", created: new Date(), deadline: new Date() },
+      { text: "리액트 스터디" },
+      { text: "과제 끝내기" },
+    ],
     "Next Week": [],
-    "To-Buy": [],
-    Shopping: [],
-    Chores: [],
+    Shopping: [{ text: "과자" }, { text: "폼 클렌저" }],
+    Chores: [{ text: "강아지 산책 하기" }, { text: "수건 빨래 하기" }],
   },
 };
 
-async function getCatData() {
+function getMenus() {
   return new Promise((res, rej) => {
     setTimeout(() => {
-      return res(categoriesData);
-    }, 1000);
+      return res(db.categories);
+    }, 700);
   });
 }
 
-async function getTodoData() {
+function getTodos(menu) {
   return new Promise((res, rej) => {
-    setTimeout(() => {
-      return res(todosData);
-    }, 200);
+    if (!db.todos[menu]) {
+      return rej(new Error("No menu has found"));
+    } else {
+      setTimeout(() => {
+        return res(db.todos[menu]);
+      }, 500);
+    }
   });
 }
 
-export { getCatData, getTodoData };
+export { getMenus, getTodos };
