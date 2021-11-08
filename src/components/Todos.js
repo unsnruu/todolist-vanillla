@@ -2,7 +2,7 @@ const Todos = (function () {
   function Todos($app, initialState, onClickPrev) {
     this.state = initialState;
     this.$target = document.createElement("div");
-    this.$target.className = "Todos";
+    this.$target.className = "Todos hide";
 
     //Issue
     //prev(goBack)버튼을 어디에 구현해야 할까.
@@ -15,12 +15,11 @@ const Todos = (function () {
     const $prevBtn = document.createElement("button");
     $prevBtn.addEventListener("click", onClickPrev);
     $prevBtn.textContent = "<";
-    //// Title : 처음에 this로 구현했는데, 굳이 프로퍼티로 만들 필요가 없을 듯.
-    //// 오히려 외부접근을 차단하는 편이 낫기때문에 변수로 대체.
-    const $title = document.createElement("h3");
-    $title.textContent = "menu1";
+    //// Title : render에서 참조하기 위해 this binding. 인스턴스 프로퍼티로 만듦.
+    this.$title = document.createElement("h3");
+    this.$title.textContent = "menu1";
     //// Merge
-    this.$target.appendChild($title);
+    this.$target.appendChild(this.$title);
     this.$target.appendChild($prevBtn);
 
     // TodoList : render에서 this로 참조하므로 this로 선언함
@@ -39,10 +38,13 @@ const Todos = (function () {
       this.render();
     },
     render() {
-      const todos = this.state.map((todo) => `<li>${todo}</li>`);
+      const todos = this.state.todos.map(
+        (todoObj) => `<li>${todoObj.text}</li>`
+      );
       this.$todolist.innerHTML = `
         ${todos.join("")}
       `;
+      this.$title.innerHTML = this.state.where;
     },
   };
   return Todos;

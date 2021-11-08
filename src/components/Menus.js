@@ -1,10 +1,10 @@
 const Menus = (function () {
-  function Menus($app, initialState) {
+  function Menus($app, initialState, onClickMenu) {
     this.state = initialState;
     this.$target = document.createElement("ul");
 
     this.$target.className = "Menus";
-    // this.$target.addEventListener();
+    this.$target.addEventListener("click", onClickMenu);
     $app.appendChild(this.$target);
   }
 
