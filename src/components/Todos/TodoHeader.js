@@ -2,7 +2,7 @@ const TodoHeader = (function () {
   function TodoHeader($parent, initialState, onClickPrev) {
     this.state = initialState;
     this.$target = document.createElement("div");
-    this.$target.className = TodoHeader;
+    this.$target.className = "TodoHeader";
 
     // PrevBtn : 처음에 this로 구현했는데, 굳이 프로퍼티로 만들 필요가 없을 듯.
     // 오히려 외부접근을 차단하는 편이 낫기때문에 변수로 대체.

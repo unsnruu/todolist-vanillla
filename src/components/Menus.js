@@ -1,11 +1,18 @@
 const Menus = (function () {
   function Menus($app, initialState, onClickMenu) {
     this.state = initialState;
-    this.$target = document.createElement("ul");
 
+    const $title = document.createElement("h2");
+    $title.textContent = "오늘은 무슨 일을 할까요?";
+    $app.appendChild($title);
+
+    this.$target = document.createElement("ul");
     this.$target.className = "Menus";
-    this.$target.addEventListener("click", onClickMenu);
+
+    // this.$target.addEventListener("click", onClickMenu);
     $app.appendChild(this.$target);
+
+    this.onClickMenu = onClickMenu;
   }
 
   Menus.prototype = {
@@ -16,12 +23,15 @@ const Menus = (function () {
       this.render();
     },
     render() {
-      const title = "무엇을 해야하나요?";
-      const menuLists = this.state.map((menu) => `<li>${menu}</li>`);
-      this.$target.innerHTML = `
-        <h2>${title}</h2>
-        ${menuLists.join("")}
-      `;
+      this.$target.innerHTML = "";
+
+      const menuLists = this.state.map((menu) => {
+        const list = document.createElement("li");
+        list.textContent = menu;
+        list.addEventListener("click", this.onClickMenu);
+        return list;
+      });
+      menuLists.forEach((list) => this.$target.appendChild(list));
     },
   };
 
