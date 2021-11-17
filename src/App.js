@@ -10,12 +10,13 @@ export default function App($app) {
 
   const onClickMenu = async (clickedMenu) => {
     let todoData;
-    if (!todosCache[clickedMenu]) {
-      todoData = await getTodos(clickedMenu);
-      todosCache[clickedMenu] = todoData;
-    } else {
+
+    if (todosCache[clickedMenu]) {
       todoData = todosCache[clickedMenu];
+    } else {
+      todoData = await getTodos(clickedMenu);
     }
+
     const nextState = {
       ...this.rootState,
       where: clickedMenu,
@@ -44,15 +45,10 @@ export default function App($app) {
     this.setState(nextState);
   };
   const onClickEdit = (editedTodo) => {
-    const newTodos = this.rootState.todos.map((todo) => {
-      if (todo.id === editedTodo.id) {
-        return editedTodo;
-      } else {
-        return todo;
-      }
-    });
-    const nextState = { ...this.rootState, todos: newTodos };
-    this.setState(nextState);
+    const newTodos = this.rootState.todos.map((todo) =>
+      todo.id === editedTodo.id ? editedTodo : todo
+    );
+    this.setState({ ...this.rootState, todos: newTodos });
   };
   // Background($app);
   const menus = new Menus($app, {}, onClickMenu);
@@ -67,6 +63,10 @@ export default function App($app) {
 
   this.setState = (nextState) => {
     this.rootState = nextState;
+
+    if (this.rootState.where) {
+      todosCache[this.rootState.where] = nextState.todos;
+    }
 
     menus.setState(this.rootState.menus);
     todos.setState({
