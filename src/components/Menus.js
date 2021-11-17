@@ -1,15 +1,23 @@
 const Menus = (function () {
   function Menus($app, initialState, onClickMenu) {
     this.state = initialState;
-
+    this.$target = document.createElement("div");
+    this.$target.className = "menu";
+    // Component: $target > $title
     const $title = document.createElement("h2");
+    $title.className = "menuTitle";
     $title.textContent = "오늘은 무슨 일을 할까요?";
-    $app.appendChild($title);
-
-    this.$target = document.createElement("ul");
-    this.$target.className = "Menus";
-
-    // this.$target.addEventListener("click", onClickMenu);
+    // Component: $target > $menuList
+    this.$menuList = document.createElement("ul");
+    this.$menuList.className = "menuList";
+    this.$menuList.addEventListener("click", (event) => {
+      if (event.target.matches(".menuItem")) {
+        onClickMenu(event.target.textContent);
+      }
+    });
+    // Appending
+    this.$target.appendChild($title);
+    this.$target.appendChild(this.$menuList);
     $app.appendChild(this.$target);
 
     this.onClickMenu = onClickMenu;
@@ -23,15 +31,17 @@ const Menus = (function () {
       this.render();
     },
     render() {
-      this.$target.innerHTML = "";
+      this.$menuList.innerHTML = "";
 
-      const menuLists = this.state.map((menu) => {
-        const list = document.createElement("li");
-        list.textContent = menu;
-        list.addEventListener("click", this.onClickMenu);
-        return list;
+      const $fragment = document.createDocumentFragment();
+      this.state.forEach((menu) => {
+        const $li = document.createElement("li");
+        $li.className = "menuItem";
+        $li.textContent = menu;
+        $fragment.appendChild($li);
       });
-      menuLists.forEach((list) => this.$target.appendChild(list));
+
+      this.$menuList.appendChild($fragment);
     },
   };
 
