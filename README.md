@@ -1,6 +1,19 @@
 # Todolist-Vanilla
 
+## 목차
+
+- [Logs](#logs)
+- [궁금한 점들](#궁금한-점들)
+- [Issues](#issues)
+- [Reference](#reference)
+
+---
+
 ## Logs
+
+### 2021.11.18
+
+- Issue#001을 해결하는 겸 리팩토링을 진행했다.
 
 ### 2021.11.12
 
@@ -128,7 +141,9 @@ function Sample() {
 - 해당 애플리케이션의 구조를 어떻게 짜야할지 고민 중입니다.
 - 어떤 컴포넌트들이 필요할 지 고민 중입니다.
 
-## Issues
+---
+
+## 궁금한 점들
 
 1. 메타 태그 `<meta http-equiv="X-UA-Compatible" content="IE=edge" />`의 뜻하는 바가 무엇인가
    [참고](https://stackoverflow.com/questions/6771258/what-does-meta-http-equiv-x-ua-compatible-content-ie-edge-do)
@@ -139,17 +154,21 @@ function Sample() {
 3. attribute vs property
    [HTML : attribute와 property 의 차이](https://jeongwooahn.medium.com/html-attribute%EC%99%80-property-%EC%9D%98-%EC%B0%A8%EC%9D%B4-d3c172cebc41)
 
-4. Issue(21.11.16): 메뉴 클릭시 투두 리스트가 갑자기 나타나는 이슈
+---
 
-#### 문제 파악
+## Issues
 
-여러번에 걸쳐 반복적으로 메뉴 버튼을 클릭할 때, 투두리스트가 나타나지 않다가 갑자기 투두 리스트가 나타나는 경우가 있음.
-이 경우, 첫 번째 클릭은 마치 아무 동작을 하지 않는 것처럼 동작한다. 다시 클릭하면 트랜지션 효과가 적용되지 않고 바로 투두 리스트의 화면이 갑자기 등장한다.
-App.js의 onClickMenu에서 문제가 생긴듯 하다. 아마 `todos.$target.style.display = "flex";` 부분이나, 비동기로 처리한 `todos.$target.className = "todos";`부분이 문제의 원인이 아닐까 싶다.
+### Closed: #001(21.11.16): 메뉴 클릭시 투두 리스트가 갑자기 나타나는 이슈
 
-#### 문제 파악 2
+**문제 파악**
 
-살펴본 결과, 오히려 onClickPrev버튼에 문제가 있음을 발견했다.
+- 여러번에 걸쳐 반복적으로 메뉴 버튼을 클릭할 때, 투두리스트가 나타나지 않다가 갑자기 투두 리스트가 나타나는 경우가 있다. 이때, 처음 클릭은 마치 아무 동작을 하지 않는 것처럼 동작한다. 다시 클릭하면 트랜지션 효과가 적용되지 않고 바로 투두 리스트의 화면이 갑자기 등장한다.
+
+- App.js의 onClickMenu에서 문제가 생긴듯 하다. 아마 `todos.$target.style.display = "flex";` 부분이나, 비동기로 처리한 `todos.$target.className = "todos";`부분이 문제의 원인이 아닐까 싶다.
+
+**문제 파악 2**
+
+- 살펴본 결과,onClickPrev에 문제가 있음을 발견했다.
 
 ```js
 // src/App.js > onClickPrev()
@@ -158,19 +177,70 @@ setTimeout(() => {
 }, 500);
 ```
 
-해당 이벤트 핸들러는 최소 500ms이후에 display 속성을 변경하는데, 이는 스타일에 적용된 transition이 제대로 작동하기 위함이었다. 그러나 이 트랜지션이 작동하는 도중에 메뉴 버튼이 클릭된다면, 메뉴 클릭 이벤트와 prev 이벤트가 충돌하게 된다.
-이를 해결하기 위해서는 트랜지션이 끝나고 메뉴 버튼을 활성화 하거나, 트랜지션의 시간을 조정하는 식으로 회피할 수 있을 것 같다고 당장은 생각이 든다.
+- 해당 이벤트 핸들러는 최소 500ms이후에 display 속성을 변경하는데, 이는 스타일에 적용된 transition이 제대로 작동하기 위함이었다. 그러나 이 트랜지션이 작동하는 도중에 메뉴 버튼이 클릭된다면, 메뉴 클릭 이벤트와 prev 이벤트가 충돌하게 된다.
 
-#### 해결책 1
+- 이를 해결하기 위해서는 트랜지션이 끝나고 메뉴 버튼을 활성화 하거나, 트랜지션의 시간을 조정하는 식으로 회피할 수 있을 것 같다고 당장은 생각이 든다.
 
-일단은 일종의 throttling을 구현해 놓았다. 두 이벤트 핸들러의 상위 스코프에 timerId를 설정하여 setTimout이 발생할 시에 값을 할당하게 하였다. 완료될 시에는 timerId를 null로 재할당하였다. 만약 timerId값이 존재한다면 이벤트가 일어나지 않도록 했으며 `alert`을 사용해서 다시 시도해 달라는 문구를 띄우기로 결정했다.
-하지만 빠르게 메뉴를 클릭할 때 이벤트가 발생하지 않는 현상은 그대로이므로, 사용자의 편의를 해치는 건 여전하다. 이 문제를 해결하려면 어떡해야할까. 아직은 감이 잘 오지 않는다. 아마 스타일링을 구현하기 위해 사용한 로직부터 바꿔야 하지 않을까 싶다.
-아니면 모두다 시간 차를 두고 setTimeout에 넣을까. timerSecond 변수를 이벤트 핸들러에 선언하고 조금 시간을 늦춰봤지만, 그 부분이 문제가 아닌가 보다. `todos.$target.style.display = "flex";`로 인해 바로 flex가 바뀌는 것이 문제이므로 여기로 손보면 될 것 같다.
-`setTimeout(()=>{todos.$target.style.display = "flex";})`로 바꾸어 봤지만, 이상하게 작동했다.
+**해결책 1**
 
-#### 해결책 2
+- 일단은 일종의 throttling을 구현했다.
+- 두 이벤트 핸들러의 상위 스코프에 timerId를 설정하여 setTimout이 발생할 시에 값을 할당하게 하였다. 완료될 시에는 timerId를 null로 재할당하였다. 만약 timerId값이 존재한다면 이벤트가 일어나지 않도록 했으며 `alert`을 사용해서 다시 시도해 달라는 문구를 띄우기로 결정했다.
 
-전역적으로 loading 값을 관리하면 좋을 듯 하다. 그러니까 `src/App.js`의 `rootState.loading`에 값을 지정해서 관리를 하는 셈이다.
+- 하지만 빠르게 메뉴를 클릭할 때 이벤트가 발생하지 않는 현상은 그대로였다. 사용자의 편의를 해치는 건 여전하다. 이 문제를 해결하려면 어떡해야할까. 아직은 감이 잘 오지 않는다. 아마 스타일링을 구현하기 위해 사용한 로직부터 바꿔야 하지 않을까 싶다. 아니면 모두다 시간 차를 두고 setTimeout에 넣을까?
+
+- timerSecond 변수를 이벤트 핸들러에 선언하고 조금 시간을 늦춰봤지만, 그 부분이 문제가 아닌가 보다.
+
+- onClickPrev와 onClickMenu가 충돌하면서 문제가 발생하는 모양이다. onClickMenu의 `todos.$target.style.display = "flex"`로 인해 바로 flex가 바뀌는 것이 문제이므로 여기로 손보면 될 것 같다.
+
+- `setTimeout(()=>{todos.$target.style.display = "flex";})`로 바꾸어 봤지만, 이상하게 작동했다.
+
+**해결책 2**
+
+- 전역적으로 loading 값을 관리하면 좋을 듯 하다. 그러니까 `src/App.js`의 `rootState.loading`에 값을 지정해서 관리를 하는 셈이다.
+
+**최종 해결**
+
+- 이런. 내가 너무 어렵게 생각했었다. 사실 너무 간단한 문제였다. 해결책 1에서 throttling을 구현했다고 했는데, 정작 timerId의 값을 설정하고는 그걸 활용해 타이머를 취소하는 걸 잊었다.
+
+- 그러니까 만일 timerId가 null값이 아니라면(=아직 렌더링 상태라면) 작업 대기중인 timer을 통한 렌더링 혹은 스타일링을 취소하면 그만이었다.
+- 리팩토링까지 거쳐서 최종적으로는 다음과 같은 로직으로 변경하였다.
+
+```js
+// src/components/Todos.js
+
+let timerId = null;
+this.render = () => {
+  if (timerId) {
+  }
+  if (this.state.where === null) {
+    this.$target.className = "todos hide";
+    timerId = setTimeout(() => {
+      this.$target.style.display = "none";
+      timerId = null;
+    }, 400);
+  } else {
+    this.$target.style.display = "flex";
+    if (timerId) {
+      clearTimeout(timerId);
+    }
+    timerId = setTimeout(() => {
+      this.$target.className = "todos";
+      timerId = null;
+    }, 0);
+  }
+};
+```
+
+- 와 ~! 정상적으로 작동했다.
+- 문제가 생겼을 때 글로 차근차근 생각을 풀어나가면 좋은 것 같다.
+  1. '내가 고치고 싶은 것은 무엇인가'를 먼저 생각했다.
+  2. 렌더링이 충돌하는 문제를 해결하고 싶었다.
+  3. 문제를 해결하기 위해서는 이전 렌더링이 진행중임을 알려주는 지표가 필요하다고 생각했다.
+  4. 지표(timerId)를 통해서 연달아 발생하는 렌더링의 순서를 조정할 수 있을까 생각했다.
+  5. 순서는 앞의 렌더링이 끝나고 뒤의 렌더링이 작동하면 좋을 것 같았다.
+  6. 결론적으로 앞의 렌더링이 끝났다는 말은 사라진다는 말이고, 해당 함수를 취소할 수 있으면 될 것 같았다.
+
+---
 
 ## Reference
 
