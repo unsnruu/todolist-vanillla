@@ -1,36 +1,32 @@
-import { getMenus, getTodos, getId } from "./api.js";
+import { getMenus, getTodos } from "./api.js";
 import { Menus } from "./components/Menus.js";
 import { Todos } from "./components/Todos/Todos.js";
+import { Background } from "./components/Background.js";
 
 const todosCache = {};
 
 export default function App($app) {
-  this.rootState = { menus: [], todos: [], where: null };
+  this.rootState = { menus: [], todos: [], where: null, isLoading: false };
 
-  const onClickMenu = async (event) => {
-    const clickedMenu = event.target.textContent;
+  const onClickMenu = async (clickedMenu) => {
     let todoData;
     if (!todosCache[clickedMenu]) {
       todoData = await getTodos(clickedMenu);
+      todosCache[clickedMenu] = todoData;
     } else {
       todoData = todosCache[clickedMenu];
     }
-    // 캐쉬 저장 구현할 것
-    this.setState({ ...this.rootState, where: clickedMenu, todos: todoData });
-    // Style
-    todos.$target.className = "Todos";
-  };
-  const onClickPrev = () => {
-    // Todos의 prevBtn 컴포넌트를 누를 수 있는 상태에서는 이미 menus데이터가 존재하므로
-    // 별도의 데이터 작업은 필요 없다. 대신 Todos 컴포넌트를 안보이게 해야함.
-    // Styling
-    todos.$target.className = "Todos hide";
-    // 사실 뒤로가기를 했을 떄 아예 컴포넌트에 접근을 못하도록 삭제하고,
-    // 이후 menu를 클릭할 떄 다시 재생성하는 편이 낫지 않을까 싶기도 하다.
+    const nextState = {
+      ...this.rootState,
+      where: clickedMenu,
+      todos: todoData,
+    };
 
-    // setTimeout(() => {
-    //   todos.$target.className = "Todos hide completely";
-    // }, 1000);
+    this.setState(nextState);
+  };
+
+  const onClickPrev = () => {
+    this.setState({ ...this.rootState, where: null });
   };
 
   const onClickAdd = (newTodo) => {
@@ -47,15 +43,31 @@ export default function App($app) {
     const nextState = { ...this.rootState, todos: filterdTodos };
     this.setState(nextState);
   };
-
+  const onClickEdit = (editedTodo) => {
+    const newTodos = this.rootState.todos.map((todo) => {
+      if (todo.id === editedTodo.id) {
+        return editedTodo;
+      } else {
+        return todo;
+      }
+    });
+    const nextState = { ...this.rootState, todos: newTodos };
+    this.setState(nextState);
+  };
+  // Background($app);
   const menus = new Menus($app, {}, onClickMenu);
-  const todos = new Todos($app, {}, onClickPrev, onClickAdd, onClickDelete);
+  const todos = new Todos(
+    $app,
+    {},
+    onClickPrev,
+    onClickAdd,
+    onClickDelete,
+    onClickEdit
+  );
 
   this.setState = (nextState) => {
     this.rootState = nextState;
-    if (this.rootState.where) {
-      todosCache[this.rootState.where] = this.rootState.todos;
-    }
+
     menus.setState(this.rootState.menus);
     todos.setState({
       todos: this.rootState.todos,
